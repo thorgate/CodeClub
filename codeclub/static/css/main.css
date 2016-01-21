@@ -1,0 +1,70 @@
+body {
+  margin-bottom: 30px;
+}
+
+.browserupgrade {
+  margin: 0;
+  background: #dd8;
+  color: #000;
+  padding: 0.5em 2em;
+  border-bottom: 1px solid #888;
+}
+
+.challenge-body-short {
+  height: 100px;
+  overflow: hidden;
+}
+
+.eventNav {
+  background-color: #eee;
+  margin-top: -21px;
+}
+.eventNav ul {
+  list-style: none;
+  margin: 0 -15px;
+  padding: 0;
+}
+.eventNav ul li {
+  display: block;
+}
+.eventNav ul li a {
+  background-color: #eeeeee;
+  color: #2c3e50;
+  display: block;
+  padding: 8px;
+  text-decoration: none;
+}
+.eventNav ul li a.active {
+  font-weight: bold;
+}
+.eventNav ul li a.warning {
+  color: #f39c12;
+}
+@media (min-width: 768px) {
+  .eventNav ul {
+    margin: 0;
+  }
+  .eventNav ul li {
+    display: inline-block;
+  }
+  .eventNav ul li + li {
+    margin-left: 4px;
+  }
+}
+
+.footer {
+  border-top: solid 1px #eee;
+  margin-top: 30px;
+  vertical-align: middle;
+}
+.footer a {
+  color: #777777;
+  display: inline-block;
+  margin: 15px 15px 15px 0;
+}
+.footer a:hover {
+  color: #444444;
+}
+.footer .pull-right a {
+  margin: 15px 0 15px 15px;
+}

@@ -1,0 +1,15 @@
+{% extends "base.html" %}
+
+{% load static %}
+
+{% block content %}
+    <div id="challenges_list"></div>
+{% endblock content %}
+
+{% block scripts %}
+    <script type="text/babel" src="{% static 'js/challenge_list.js' %}"></script>
+    <script type="text/javascript">
+        var CHALLENGES_URL = "{% url 'challenges_json' %}";
+        var CHALLENGE_DETAIL_URL = "{% url 'challenge_detail' 0 %}";
+    </script>
+{% endblock scripts %}

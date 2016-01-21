@@ -1,0 +1,13 @@
+{
+    "name": "codeclub",
+    "version": "0.0.0",
+    "authors": [
+        "Thorgate <hi@thorgate.eu>"
+    ],
+    "license": "MIT",
+    "private": true,
+    "dependencies": {
+    },
+    "resolutions": {
+    }
+}

@@ -1,0 +1,22 @@
+# Ignore everything in .idea
+.idea
+
+*.pyo
+*.pyc
+.sass-cache/
+npm-debug.log
+node_modules/
+venv/
+
+codeclub/settings/local.py
+codeclub/db.sqlite3
+codeclub/assets/
+codeclub/media/
+codeclub/static/bower_components/
+
+codeclub/.cache
+codeclub/.coverage
+codeclub/cover/
+docker/solution.py
+docker/tester.py
+docker/requirements.txt

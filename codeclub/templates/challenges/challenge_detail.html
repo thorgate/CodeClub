@@ -1,0 +1,17 @@
+{% extends "base.html" %}
+
+{% load crispy_forms_tags %}
+{% load static %}
+
+{% block content %}
+    <div id="challenge_detail"></div>
+
+    {% crispy form %}
+{% endblock content %}
+
+{% block scripts %}
+    <script type="text/babel" src="{% static 'js/challenge_detail.js' %}"></script>
+    <script type="text/javascript">
+        var CHALLENGE_URL = "{% url 'challenge_json' challenge.id %}";
+    </script>
+{% endblock scripts %}

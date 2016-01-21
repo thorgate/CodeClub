@@ -1,0 +1,15 @@
+{% extends "base.html" %}
+
+{% load static %}
+
+{% block full_content %}
+    <div id="dashboard"></div>
+{% endblock full_content %}
+
+{% block scripts %}
+    <script type="text/babel" src="{% static 'js/dashboard.js' %}"></script>
+    <script type="text/javascript">
+        var CONTESTANTS_URL = "{% url 'contestants_json' %}";
+        var EVENTS_URL = "{% url 'events_json' %}";
+    </script>
+{% endblock scripts %}
