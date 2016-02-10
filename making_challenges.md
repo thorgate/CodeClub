@@ -15,7 +15,7 @@ Timeout:
 
 Points:
 
-+ my_tests.py
+\+ my_tests.py file
 
 Email to: kristo.koert@gmail.com
 
