@@ -8,6 +8,7 @@ from django.views.generic import View, TemplateView, DetailView
 from django.views.generic.detail import BaseDetailView
 
 from accounts.mixins import ProtectedMixin
+from accounts.models import User
 from challenges.forms import SolutionForm
 from challenges.models import Challenge, Solution, Event
 
@@ -136,9 +137,24 @@ class ChallengeJSON(ProtectedMixin, BaseDetailView):
 
         solutions = self.object.solution_set.filter(user=self.request.user).order_by('-timestamp')
 
+        # We could use DISTINCT ON user_id, but it only works in PostgreSQL
+        all_correct_solutions = self.object.solution_set.filter(
+            status=Solution.STATUS_CORRECT,
+        ).order_by('timestamp').select_related('user')
+
+        # Do the mapping in memory so that we have the correct order of the users
+        # Cache is used for detecting if we have already added the user to the list or not
+        correct_user_cache = []
+        correct_users = []
+        for solution in all_correct_solutions:
+            if solution.user_id not in correct_user_cache:
+                correct_user_cache.append(solution.user_id)
+                correct_users.append(solution.user.get_display_name())
+
         return JSONResponse({
             'challenge': self.object.serialize(),
             'solutions': [s.serialize() for s in solutions],
+            'correct_users': correct_users,
         })
 
 

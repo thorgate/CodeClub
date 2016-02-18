@@ -1,7 +1,7 @@
 from django import forms
 
 from crispy_forms.helper import FormHelper
-from crispy_forms.layout import Layout, Submit
+from crispy_forms.layout import Layout, Submit, Div
 
 from challenges.models import Solution
 from challenges.tasks import validate_solution
@@ -23,12 +23,18 @@ class SolutionForm(forms.ModelForm):
 
         self.helper = FormHelper()
         self.helper.form_class = "form-horizontal"
-        self.helper.label_class = "col-lg-6"
-        self.helper.field_class = "col-lg-6"
+        self.helper.label_class = "col-sm-6"
+        self.helper.field_class = "col-sm-6"
         self.helper.layout = Layout(
             'solution',
             'estimated_points',
-            Submit('submit', 'Submit solution', css_class="btn btn-primary")
+            Div(
+                Div(
+                    Submit('submit', 'Submit solution', css_class="btn btn-primary"),
+                    css_class='col-sm-offset-6 col-sm-6',
+                ),
+                css_class='row',
+            ),
         )
 
     def clean(self):

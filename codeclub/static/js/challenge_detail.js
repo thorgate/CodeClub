@@ -5,7 +5,8 @@ var ChallengeDetail = React.createClass({
     getInitialState: function() {
         return {
             challenge: "loading",
-            solutions: []
+            solutions: [],
+            correct_users: []
         };
     },
 
@@ -17,11 +18,12 @@ var ChallengeDetail = React.createClass({
             success: function (data) {
                 this.setState({
                     challenge: data.challenge,
-                    solutions: data.solutions
+                    solutions: data.solutions,
+                    correct_users: data.correct_users
                 });
             }.bind(this),
             error: function(xhr, status, err) {
-                this.setState({challenge: null, solutions: []});
+                this.setState({challenge: null, solutions: [], correct_users: []});
                 console.error(this.props.url, status, err.toString());
             }.bind(this)
         })
@@ -62,9 +64,30 @@ var ChallengeDetail = React.createClass({
                     <div dangerouslySetInnerHTML={{ __html: marked(this.state.challenge.description, {sanitize: true}) }}></div>
                 </div>
 
-                <h2>Your solutions</h2>
+                <div className="row">
+                    <div className="col-xs-12 col-md-push-6 col-md-6">
+                        <UserList users={this.state.correct_users} />
+                    </div>
+                    <div className="col-xs-12 col-md-pull-6 col-md-6">
+                        <h2>Your solutions</h2>
+                        <SolutionList solutions={this.state.solutions} />
+                    </div>
+                </div>
+            </div>
+        );
+    }
+});
 
-                <SolutionList solutions={this.state.solutions} />
+var UserList = React.createClass({
+    render: function() {
+        if (this.props.users.length == 0) {
+            return <h2>No correct solutions yet :(</h2>
+        }
+
+        return (
+            <div>
+                <h2>Correct solutions from:</h2>
+                { this.props.users.join(", ") }
             </div>
         );
     }
@@ -107,6 +130,6 @@ var Solution = React.createClass({
 });
 
 ReactDOM.render(
-  <ChallengeDetail pollInterval={5*1000} url={CHALLENGE_URL} />,
-  document.getElementById('challenge_detail')
+    <ChallengeDetail pollInterval={5*1000} url={CHALLENGE_URL} />,
+    document.getElementById('challenge_detail')
 );
