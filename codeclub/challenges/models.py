@@ -121,7 +121,7 @@ class Solution(LowerHashIdsMixin, models.Model):
     STATUS_CHOICES = (
         (STATUS_SUBMITTED, 'Submitted'),
         (STATUS_IN_PROGRESS, 'In progress'),
-        (STATUS_TIMEOUT, 'Got timeout'),
+        (STATUS_TIMEOUT, 'Timed out'),
         (STATUS_WRONG, 'Wrong'),
         (STATUS_CORRECT, 'Correct'),
     )
@@ -247,4 +247,5 @@ class Solution(LowerHashIdsMixin, models.Model):
             'url': self.solution.url,
             'timestamp': dateformat.format(self.timestamp.astimezone(timezone.get_default_timezone()), 'd. F - H:i'),
             'bootstrap_class': self.bootstrap_class,
+            'status_title': self.get_status_display(),
         }

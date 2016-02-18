@@ -17,6 +17,12 @@ body {
     overflow: hidden;
 }
 
+.solution-info-label {
+    display: inline-block;
+    min-width: 70px;
+    margin-right: 8px;
+}
+
 .eventNav {
     background-color: #eee;
     margin-top: -21px;

@@ -62,11 +62,6 @@ var ChallengeDetail = React.createClass({
                     <div dangerouslySetInnerHTML={{ __html: marked(this.state.challenge.description, {sanitize: true}) }}></div>
                 </div>
 
-                <div className="label label-danger pull-right">Wrong</div>
-                <div className="label label-warning pull-right">Timed out</div>
-                <div className="label label-info pull-right">In progress</div>
-                <div className="label label-success pull-right">Correct</div>
-
                 <h2>Your solutions</h2>
 
                 <SolutionList solutions={this.state.solutions} />
@@ -95,17 +90,16 @@ var SolutionList = React.createClass({
 
 var Solution = React.createClass({
     render: function() {
-        var solutionClass = "list-group-item";
-        if (this.props.solution.bootstrap_class) {
-            solutionClass += " list-group-item-" + this.props.solution.bootstrap_class
-        }
+        var labelClass = "label solution-info-label";
+        labelClass += " label-" + (this.props.solution.bootstrap_class || "default");
 
         return (
-            <a href={ this.props.solution.url } className={solutionClass}>
+            <a href={ this.props.solution.url } className="list-group-item">
                 <span className="pull-right">
                     { this.props.solution.timestamp }
                 </span>
 
+                <span className={labelClass}>{ this.props.solution.status_title}</span>
                 { this.props.solution.filename }
             </a>
         );
