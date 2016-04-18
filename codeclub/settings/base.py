@@ -172,7 +172,7 @@ DEFAULT_FROM_EMAIL = "CodeClub <info@TODO.com>"
 SERVER_EMAIL = "CodeClub server <server@TODO.com>"
 
 # SMTP
-EMAIL_HOST = 'smtp.mandrillapp.com'
+EMAIL_HOST = 'smtp.sparkpostmail.com'
 EMAIL_PORT = 587
 EMAIL_HOST_USER = 'info@TODO.com'
 EMAIL_HOST_PASSWORD = 'TODO (test api key)'
