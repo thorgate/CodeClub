@@ -66,11 +66,11 @@ var ChallengeDetail = React.createClass({
 
                 <div className="row">
                     <div className="col-xs-12 col-md-push-6 col-md-6">
-                        <UserList users={this.state.correct_users} />
+                        <UserList users={this.state.correct_users} golf={this.state.challenge.golf}/>
                     </div>
                     <div className="col-xs-12 col-md-pull-6 col-md-6">
                         <h2>Your solutions</h2>
-                        <SolutionList solutions={this.state.solutions} />
+                        <SolutionList solutions={this.state.solutions} golf={this.state.challenge.golf}/>
                     </div>
                 </div>
             </div>
@@ -84,10 +84,22 @@ var UserList = React.createClass({
             return <h2>No correct solutions yet :(</h2>
         }
 
+        var displayedUsers = this.props.users.map(function(user) {
+            if (!this.props.golf)
+                return user[0];
+            return user[0] + " (" + user[1] + " bytes)"
+        }.bind(this));
+
+        if (this.props.golf) {
+            displayedUsers.sort(function(a, b) {
+                return b - a;
+            });
+        }
+
         return (
             <div>
                 <h2>Correct solutions from:</h2>
-                { this.props.users.join(", ") }
+                { displayedUsers.join(", ") }
             </div>
         );
     }
@@ -103,7 +115,7 @@ var SolutionList = React.createClass({
             <div>
                 <div className="list-group">
                     {this.props.solutions.map(function(solution, index) {
-                        return <Solution key={index} solution={solution} />;
+                        return <Solution key={index} solution={solution} golf={this.props.golf}/>;
                     }.bind(this))}
                 </div>
             </div>
@@ -116,6 +128,8 @@ var Solution = React.createClass({
         var labelClass = "label solution-info-label";
         labelClass += " label-" + (this.props.solution.bootstrap_class || "default");
 
+        var sizeBlock = "(" + this.props.solution.filesize + " bytes)";
+
         return (
             <a href={ this.props.solution.url } className="list-group-item">
                 <span className="pull-right">
@@ -123,7 +137,7 @@ var Solution = React.createClass({
                 </span>
 
                 <span className={labelClass}>{ this.props.solution.status_title}</span>
-                { this.props.solution.filename }
+                { this.props.solution.filename } { this.props.golf ? sizeBlock : null}
             </a>
         );
     }

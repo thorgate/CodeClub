@@ -143,18 +143,20 @@ class ChallengeJSON(ProtectedMixin, BaseDetailView):
         ).order_by('timestamp').select_related('user')
 
         # Do the mapping in memory so that we have the correct order of the users
-        # Cache is used for detecting if we have already added the user to the list or not
-        correct_user_cache = []
-        correct_users = []
+        correct_users = {}
         for solution in all_correct_solutions:
-            if solution.user_id not in correct_user_cache:
-                correct_user_cache.append(solution.user_id)
-                correct_users.append(solution.user.get_display_name())
+            entry = correct_users.get(solution.user_id)
+            if not entry:
+                correct_users[solution.user_id] = [solution.user.get_display_name(), solution.solution.size]
+            else:
+                # show the lowest filesize
+                if solution.solution.size < entry[1]:
+                    entry[1] = solution.solution.size
 
         return JSONResponse({
             'challenge': self.object.serialize(),
             'solutions': [s.serialize() for s in solutions],
-            'correct_users': correct_users,
+            'correct_users': list(correct_users.values()),
         })
 
 
