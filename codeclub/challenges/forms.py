@@ -49,6 +49,7 @@ class SolutionForm(forms.ModelForm):
         solution.user = self.user
         solution.challenge = self.challenge
         solution.status = Solution.STATUS_SUBMITTED
+        solution.solution_size = solution.solution.size
 
         if commit:
             solution.save()

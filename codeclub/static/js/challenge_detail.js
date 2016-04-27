@@ -90,12 +90,6 @@ var UserList = React.createClass({
             return user[0] + " (" + user[1] + " bytes)"
         }.bind(this));
 
-        if (this.props.golf) {
-            displayedUsers.sort(function(a, b) {
-                return b - a;
-            });
-        }
-
         return (
             <div>
                 <h2>Correct solutions from:</h2>
