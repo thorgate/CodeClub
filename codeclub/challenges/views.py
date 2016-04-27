@@ -138,13 +138,15 @@ class ChallengeJSON(ProtectedMixin, BaseDetailView):
         solutions = self.object.solution_set.filter(user=self.request.user).order_by('-timestamp')
 
         order_columns = ['timestamp']
+        filters = {'status': Solution.STATUS_CORRECT}
+
         if self.object.golf:
             order_columns.insert(0, 'solution_size')
+            filters['solution_size__isnull'] = False
 
         # We could use DISTINCT ON user_id, but it only works in PostgreSQL
-        all_correct_solutions = self.object.solution_set.filter(
-            status=Solution.STATUS_CORRECT,
-        ).order_by(*order_columns).select_related('user')
+        all_correct_solutions = self.object.solution_set\
+            .filter(**filters).order_by(*order_columns).select_related('user')
 
         # Do the mapping in memory so that we have the correct order of the users
         # Cache is used for detecting if we have already added the user to the list or not
