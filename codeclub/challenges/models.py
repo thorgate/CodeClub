@@ -61,6 +61,8 @@ class Challenge(CachedModelMixin, models.Model):
     public = models.BooleanField(default=True)
     author = models.ForeignKey("accounts.User")
 
+    golf = models.BooleanField(default=False)
+
     tester = models.FileField(upload_to=random_path)
     requirements = models.FileField(upload_to=random_path, null=True, blank=True)
     timeout = models.FloatField(default=10)
@@ -108,6 +110,7 @@ class Challenge(CachedModelMixin, models.Model):
             'public': self.public,
             'description': self.description,
             'calculated_points': self.calculated_points,
+            'golf': self.golf,
         }
 
 
@@ -130,6 +133,7 @@ class Solution(LowerHashIdsMixin, models.Model):
     challenge = models.ForeignKey(Challenge)
 
     solution = models.FileField(upload_to=random_path)
+    solution_size = models.PositiveIntegerField(null=True)
     status = models.PositiveSmallIntegerField(choices=STATUS_CHOICES, default=STATUS_SUBMITTED)
     timestamp = models.DateTimeField(default=timezone.now)
 
@@ -244,6 +248,7 @@ class Solution(LowerHashIdsMixin, models.Model):
         return {
             'id': self.id,
             'filename': self.filename,
+            'filesize': self.solution_size,
             'url': self.solution.url,
             'timestamp': dateformat.format(self.timestamp.astimezone(timezone.get_default_timezone()), 'd. F - H:i'),
             'bootstrap_class': self.bootstrap_class,
