@@ -15,6 +15,10 @@ body {
   overflow: hidden;
 }
 
+.panel-title .label.pull-right, .jumbotron .label + .label {
+  margin-left: 6px;
+}
+
 .solution-info-label {
   display: inline-block;
   min-width: 70px;

@@ -56,11 +56,22 @@ var ChallengeDetail = React.createClass({
             );
         }
 
+        var golf_label = null;
+        if (this.state.challenge.golf) {
+            golf_label = (
+                <span className="label label-default">GOLF</span>
+            );
+        }
+
         return (
             <div>
                 <div className="jumbotron">
                     <h1>{ this.state.challenge.title } <small>by { this.state.challenge.author }</small></h1>
-                    {non_public_warning}
+                    <p>
+                        <span className="label label-primary">{this.state.challenge.calculated_points}</span>
+                        {golf_label}
+                        {non_public_warning}
+                    </p>
                     <div dangerouslySetInnerHTML={{ __html: marked(this.state.challenge.description, {sanitize: true}) }}></div>
                 </div>
 

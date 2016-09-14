@@ -77,7 +77,13 @@ var Challenge = React.createClass({
         panelClasses += this.props.challenge.public ? (this.props.solved ? "success" : "default") : "warning";
 
         var labelClasses = "label pull-right label-";
-        labelClasses += this.props.solved ? "success" : "primary";
+        var pointsLabelClasses = labelClasses + (this.props.solved ? "success" : "primary");
+
+        var golfLabel = null;
+        if (this.props.challenge.golf) {
+            var golfLabelClasses = labelClasses + (this.props.solved ? "success" : "default");
+            golfLabel = <span className={golfLabelClasses}>GOLF</span>;
+        }
 
         var detail_url = CHALLENGE_DETAIL_URL.replace("/0", "/" + this.props.challenge.id);
 
@@ -86,9 +92,10 @@ var Challenge = React.createClass({
                 <div className={panelClasses}>
                     <div className="panel-heading">
                         <h3 className="panel-title">
-                            <span className={labelClasses}>
+                            <span className={pointsLabelClasses}>
                                 {this.props.challenge.calculated_points}
                             </span>
+                            {golfLabel}
                             {this.props.challenge.title}
                         </h3>
                     </div>
