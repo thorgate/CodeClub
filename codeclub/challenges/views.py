@@ -13,6 +13,10 @@ from challenges.forms import SolutionForm
 from challenges.models import Challenge, Solution, Event
 
 
+class CodeOfConductView(TemplateView):
+    template_name = "challenges/coc.html"
+
+
 class DashboardView(TemplateView):
     template_name = "challenges/dashboard.html"
 

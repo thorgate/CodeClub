@@ -1,10 +1,13 @@
 from django.conf.urls import patterns, url
 
-from challenges.views import DashboardView, ChallengeListView, ChallengeDetailView, \
-    ContestantsJSON, ChallengesJSON, ChallengeJSON, EventsJSON
+from challenges.views import (
+    DashboardView, ChallengeListView, ChallengeDetailView, CodeOfConductView,
+    ContestantsJSON, ChallengesJSON, ChallengeJSON, EventsJSON,
+)
 
 
 urlpatterns = patterns('accounts.views',
+    url(r'^coc', CodeOfConductView.as_view(), name='coc'),
     url(r'^dashboard$', DashboardView.as_view(), name='dashboard'),
     url(r'^challenges$', ChallengeListView.as_view(), name='challenge_list'),
     url(r'^challenges/(?P<pk>[0-9]+)$', ChallengeDetailView.as_view(), name='challenge_detail'),
