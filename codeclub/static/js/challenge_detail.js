@@ -141,7 +141,7 @@ var Solution = React.createClass({
                     { this.props.solution.timestamp }
                 </span>
 
-                <span className={labelClass}>{ this.props.solution.status_title}</span>
+                <span className={labelClass} title={ this.props.solution.id }>{ this.props.solution.status_title}</span>
                 { this.props.solution.filename } { this.props.golf ? sizeBlock : null}
             </a>
         );
