@@ -15,7 +15,9 @@ def validate_solution(solution_id):
     solution.status = Solution.STATUS_IN_PROGRESS
     solution.save()
 
-    solution.status = solution.check_solution()
+    status, output = solution.check_solution()
+    solution.status = status
+    solution.output = output
     solution.save()
     solution.challenge.clear_cache_hash()
 

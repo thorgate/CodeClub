@@ -136,6 +136,7 @@ class Solution(LowerHashIdsMixin, models.Model):
     solution_size = models.PositiveIntegerField(null=True)
     status = models.PositiveSmallIntegerField(choices=STATUS_CHOICES, default=STATUS_SUBMITTED)
     timestamp = models.DateTimeField(default=timezone.now)
+    output = models.TextField(blank=True)
 
     estimated_points = SolutionEstimateField(null=True, blank=True)
 
@@ -185,12 +186,13 @@ class Solution(LowerHashIdsMixin, models.Model):
                     os.remove(requirements_path)
                 open(requirements_path, 'a').close()
         except IOError as e:
-            logger.error("Solution - file copying failed")
-            logger.error(e)
-            return Solution.STATUS_SUBMITTED
+            solution_message = "Solution - file copying failed\n{}".format(e)
+            logger.error(solution_message)
+            return Solution.STATUS_SUBMITTED, solution_message
         else:
             logger.info("Building image")
             solution_status = Solution.STATUS_CORRECT
+            solution_message = "Correct"
             image_hash = "image{}".format(self.hashid)
             container_hash = "container{}".format(self.hashid)
 
@@ -201,10 +203,9 @@ class Solution(LowerHashIdsMixin, models.Model):
             try:
                 output = subprocess.check_output(build_cmd, stderr=subprocess.STDOUT, shell=True)
             except subprocess.CalledProcessError as e:
-                logger.info("Solution - image building failed")
-                logger.error(e)
-                logger.error(e.output)
-                return Solution.STATUS_SUBMITTED
+                solution_message = "Solution - image building failed\n{}\n{}".format(e, e.output)
+                logger.error(solution_message)
+                return Solution.STATUS_SUBMITTED, solution_message
 
             logger.info("Running container")
             run_cmd = "docker run --rm --log-driver=none --name={} {}".format(container_hash, image_hash)
@@ -217,32 +218,37 @@ class Solution(LowerHashIdsMixin, models.Model):
                 try:
                     subprocess.check_output("docker stop {}".format(container_hash), stderr=subprocess.STDOUT, shell=True)
                 except subprocess.CalledProcessError as f:
-                    logger.error("Docker container {} stopping failed".format(container_hash))
-                    logger.error(f.output)
+                    error_message = "Docker container {} stopping failed\n{}".format(container_hash, force_text(f.output))
+                    logger.error(error_message)
+                    solution_message += "\n{}".format(error_message)
 
                 try:
                     subprocess.check_output("docker rm -v -f {}".format(container_hash), stderr=subprocess.STDOUT, shell=True)
                 except subprocess.CalledProcessError as f:
-                    logger.error("Docker container {} removing failed".format(container_hash))
-                    logger.error(f.output)
+                    error_message = "Docker container {} removing failed\n{}".format(container_hash, force_text(f.output))
+                    logger.error(error_message)
+                    solution_message += "\n{}".format(error_message)
 
                 logger.info("Solution - timeout")
                 # logger.info(e.output)
                 solution_status = Solution.STATUS_TIMEOUT
+                solution_message = "Timeout\n{}".format(force_text(e.output)[:1024])
             except subprocess.CalledProcessError as e:
                 logger.info("Solution - wrong")
                 logger.info(e.output)
                 solution_status = Solution.STATUS_WRONG
+                solution_message = "Wrong\n{}".format(force_text(e.output)[:1024])
             else:
                 logger.info("Solution - correct")
                 logger.info(force_text(output))
+                solution_message = "Correct\n{}".format(force_text(output)[:1024])
 
             try:
                 subprocess.check_output("docker rmi {}".format(image_hash), stderr=subprocess.STDOUT, shell=True)
             except subprocess.CalledProcessError:
                 pass
 
-            return solution_status
+            return solution_status, solution_message
 
     def serialize(self):
         return {

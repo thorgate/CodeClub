@@ -13,6 +13,8 @@ class Command(BaseCommand):
         self.stdout.write('There are %d solutions with submitted status' % solutions.count())
         for solution in solutions:
             self.stdout.write('Checking solution %d - %s' % (solution.id, solution.user.email))
-            solution.status = solution.check_solution()
+            status, output = solution.check_solution()
+            solution.status = status
+            solution.output = output
             solution.save()
             self.stdout.write('Done - %d' % solution.status)
