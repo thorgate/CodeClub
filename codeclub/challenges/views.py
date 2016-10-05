@@ -1,5 +1,6 @@
 import json
 from datetime import datetime
+from math import floor
 
 from django.http import HttpResponse
 from django.shortcuts import redirect
@@ -8,7 +9,6 @@ from django.views.generic import View, TemplateView, DetailView
 from django.views.generic.detail import BaseDetailView
 
 from accounts.mixins import ProtectedMixin
-from accounts.models import User
 from challenges.forms import SolutionForm
 from challenges.models import Challenge, Solution, Event
 
@@ -76,7 +76,15 @@ class ContestantsJSON(View):
         else:
             solutions = solutions.filter(challenge__event=event)
 
-        solutions = solutions.order_by('user_id', '-challenge_id')
+        # Find the best golfing challenges
+        golf_solutions = solutions.filter(challenge__golf=True, solution_size__isnull=False)
+        golf_solutions = golf_solutions.order_by('challenge_id', 'solution_size')
+        golf_solutions = golf_solutions.distinct('challenge_id')
+        best_golf_solutions = {}
+        for golf_solution in golf_solutions:
+            best_golf_solutions[golf_solution.challenge_id] = golf_solution.solution_size
+
+        solutions = solutions.order_by('user_id', '-challenge_id', 'solution_size')
         solutions = solutions.distinct('user_id', 'challenge_id')
         solutions = solutions.select_related('user', 'challenge')
         contestants = {}
@@ -93,7 +101,12 @@ class ContestantsJSON(View):
 
             contestant = contestants[user.id]
             contestant['challenges'] += 1
-            contestant['score'] += solution.challenge.calculated_points
+            if solution.challenge.golf:
+                best_solution = best_golf_solutions.get(solution.challenge_id, solution.challenge.calculated_points)
+                size_factor = best_solution / solution.solution_size
+                contestant['score'] += floor(solution.challenge.calculated_points * size_factor)
+            else:
+                contestant['score'] += solution.challenge.calculated_points
 
         contestants = sorted(contestants.values(), key=lambda c: (-c['score'], -c['challenges'], c['name'].lower()))
 
