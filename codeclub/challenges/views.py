@@ -175,7 +175,11 @@ class ChallengeJSON(ProtectedMixin, BaseDetailView):
         for solution in all_correct_solutions:
             if solution.user_id not in correct_user_cache:
                 correct_user_cache.append(solution.user_id)
-                correct_users.append((solution.user.get_display_name(), solution.solution_size))
+                correct_users.append({
+                    'id': solution.user.pk,
+                    'name': solution.user.get_display_name(),
+                    'solution_size': solution.solution_size,
+                })
 
         return JSONResponse({
             'challenge': self.object.serialize(),
