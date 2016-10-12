@@ -102,9 +102,12 @@ class ContestantsJSON(View):
             contestant = contestants[user.id]
             contestant['challenges'] += 1
             if solution.challenge.golf:
-                best_solution = best_golf_solutions.get(solution.challenge_id, solution.challenge.calculated_points)
-                size_factor = best_solution / solution.solution_size
-                contestant['score'] += floor(solution.challenge.calculated_points * size_factor)
+                best_solution = best_golf_solutions.get(solution.challenge_id)
+                if best_solution is not None:
+                    size_factor = best_solution / solution.solution_size
+                    contestant['score'] += floor(solution.challenge.calculated_points * size_factor)
+                else:
+                    contestant['score'] += solution.challenge.calculated_points
             else:
                 contestant['score'] += solution.challenge.calculated_points
 
