@@ -173,12 +173,23 @@ class Solution(LowerHashIdsMixin, models.Model):
 
         from django.conf import settings
 
+        tmp_docker_root = os.path.join(os.path.dirname(settings.SITE_ROOT), 'docker_tmp', self.hashid)
+        dockerfile_path = os.path.join(os.path.dirname(settings.SITE_ROOT), 'docker/Dockerfile')
+        if not os.path.exists(tmp_docker_root):
+            try:
+                os.makedirs(tmp_docker_root)
+            except OSError as e:
+                solution_message = "Solution - docker dir creation failed\n{}".format(e)
+                logger.error(solution_message)
+                return Solution.STATUS_SUBMITTED, solution_message
+
         logger.info("Copying files")
         try:
-            shutil.copy(os.path.join(settings.MEDIA_ROOT, self.challenge.tester.file.name), os.path.join(os.path.dirname(settings.SITE_ROOT), 'docker/tester.py'))
-            shutil.copy(os.path.join(settings.MEDIA_ROOT, self.solution.file.name), os.path.join(os.path.dirname(settings.SITE_ROOT), 'docker/solution.py'))
+            shutil.copy(dockerfile_path, os.path.join(tmp_docker_root, 'Dockerfile'))
+            shutil.copy(os.path.join(settings.MEDIA_ROOT, self.challenge.tester.file.name), os.path.join(tmp_docker_root, 'tester.py'))
+            shutil.copy(os.path.join(settings.MEDIA_ROOT, self.solution.file.name), os.path.join(tmp_docker_root, 'solution.py'))
 
-            requirements_path = os.path.join(os.path.dirname(settings.SITE_ROOT), 'docker/requirements.txt')
+            requirements_path = os.path.join(tmp_docker_root, 'requirements.txt')
             if self.challenge.requirements:
                 shutil.copy(os.path.join(settings.MEDIA_ROOT, self.challenge.requirements.file.name), requirements_path)
             else:
@@ -196,10 +207,7 @@ class Solution(LowerHashIdsMixin, models.Model):
             image_hash = "image{}".format(self.hashid)
             container_hash = "container{}".format(self.hashid)
 
-            build_cmd = "docker build -t {} {}".format(
-                image_hash,
-                os.path.join(os.path.dirname(settings.SITE_ROOT), 'docker'),
-            )
+            build_cmd = "docker build -t {} {}".format(image_hash, tmp_docker_root)
             try:
                 output = subprocess.check_output(build_cmd, stderr=subprocess.STDOUT, shell=True)
             except subprocess.CalledProcessError as e:
@@ -247,6 +255,12 @@ class Solution(LowerHashIdsMixin, models.Model):
                 subprocess.check_output("docker rmi {}".format(image_hash), stderr=subprocess.STDOUT, shell=True)
             except subprocess.CalledProcessError:
                 pass
+
+            if os.path.exists(tmp_docker_root):
+                try:
+                    shutil.rmtree(tmp_docker_root)
+                except OSError as e:
+                    pass
 
             return solution_status, solution_message
 
