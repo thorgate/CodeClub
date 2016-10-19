@@ -77,7 +77,11 @@ var ChallengeDetail = React.createClass({
 
                 <div className="row">
                     <div className="col-xs-12 col-md-push-6 col-md-6">
-                        <UserList users={this.state.correct_users} golf={this.state.challenge.golf}/>
+                        <UserList
+                            users={this.state.correct_users}
+                            golf={this.state.challenge.golf}
+                            points={this.state.challenge.calculated_points}
+                        />
                     </div>
                     <div className="col-xs-12 col-md-pull-6 col-md-6">
                         <h2>Your solutions</h2>
@@ -95,16 +99,46 @@ var UserList = React.createClass({
             return <h2>No correct solutions yet :(</h2>
         }
 
-        var displayedUsers = this.props.users.map(function(user) {
+        function getGolfPoints(challengePoints, minBytes, userBytes) {
+            return Math.floor((minBytes / userBytes) * challengePoints);
+        }
+
+        var displayedUsers = this.props.users.map(function(user, index) {
             if (!this.props.golf)
-                return user[0];
-            return user[0] + " (" + user[1] + " bytes)"
+                return (
+                    <tr key={index}>
+                        <td>{index + 1}</td>
+                        <td>{user.name}</td>
+                    </tr>
+                );
+            return (
+                <tr key={index}>
+                    <td>{index + 1}</td>
+                    <td>{user.name}</td>
+                    <td>{user.solution_size}</td>
+                    <td>{getGolfPoints(this.props.points, this.props.users[0].solution_size, user.solution_size)}</td>
+                </tr>
+            );
         }.bind(this));
 
         return (
             <div>
                 <h2>Correct solutions from:</h2>
-                { displayedUsers.join(", ") }
+                <div className="user-list">
+                    <table className="table table-striped table-hover">
+                        <thead>
+                        <tr>
+                            <th>#</th>
+                            <th>Name</th>
+                            {this.props.golf ? <th>Bytes</th> : null}
+                            {this.props.golf ? <th>Points</th> : null}
+                        </tr>
+                        </thead>
+                        <tbody>
+                            {displayedUsers}
+                        </tbody>
+                    </table>
+                </div>
             </div>
         );
     }

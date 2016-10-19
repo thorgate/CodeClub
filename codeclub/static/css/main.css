@@ -25,6 +25,11 @@ body {
   margin-right: 8px;
 }
 
+.user-list {
+  max-height: 300px;
+  overflow: auto;
+}
+
 .eventNav {
   background-color: #eee;
   margin-top: -21px;
