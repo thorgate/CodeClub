@@ -62,6 +62,7 @@ class Challenge(CachedModelMixin, models.Model):
     author = models.ForeignKey("accounts.User")
 
     golf = models.BooleanField(default=False)
+    network_allowed = models.BooleanField(default=False)
 
     tester = models.FileField(upload_to=random_path)
     requirements = models.FileField(upload_to=random_path, null=True, blank=True)
@@ -216,7 +217,11 @@ class Solution(LowerHashIdsMixin, models.Model):
                 return Solution.STATUS_SUBMITTED, solution_message
 
             logger.info("Running container")
-            run_cmd = "docker run --rm --log-driver=none --name={} {}".format(container_hash, image_hash)
+            run_cmd = "docker run --rm{network} --log-driver=none --name={name} {image}".format(
+                network=' --network=none' if not self.challenge.network_allowed else '',
+                name=container_hash,
+                image=image_hash,
+            )
 
             try:
                 output = subprocess.check_output(

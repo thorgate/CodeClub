@@ -11,8 +11,8 @@ class EventAdmin(admin.ModelAdmin):
 
 class ChallengeAdmin(admin.ModelAdmin):
     search_fields = ['event__title']
-    list_filter = ('event', 'event__public', 'public', 'author', 'golf')
-    list_display = ('title', 'public', 'event', 'author', 'golf')
+    list_filter = ('event__public', 'public', 'golf', 'network_allowed', 'event', 'author')
+    list_display = ('title', 'public', 'event', 'author', 'golf', 'network_allowed')
 
 
 class SolutionAdmin(admin.ModelAdmin):
