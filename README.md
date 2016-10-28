@@ -2,6 +2,7 @@
 
  - Python:  3.4
  - DB:      PostgreSQL
+ - Docker:  v1.12.3+
 
 ## Setting up development
 
