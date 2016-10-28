@@ -1,7 +1,7 @@
 # README for CodeClub
 
  - Python:  3.4
- - DB:      PostgreSQL (locally SQLite)
+ - DB:      PostgreSQL
 
 ## Setting up development
 
