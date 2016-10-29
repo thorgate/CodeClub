@@ -1,5 +1,6 @@
 import logging
 import math
+import json
 
 from django.core.cache import cache
 from django.core.urlresolvers import reverse
@@ -175,10 +176,14 @@ class Solution(LowerHashIdsMixin, models.Model):
         from django.conf import settings
 
         tmp_docker_root = os.path.join(os.path.dirname(settings.SITE_ROOT), 'docker_tmp', self.hashid)
+        tmp_docker_mount =  os.path.join(tmp_docker_root, 'mount')
+
         dockerfile_path = os.path.join(os.path.dirname(settings.SITE_ROOT), 'docker/Dockerfile')
+        reporter_path = os.path.join(os.path.dirname(settings.SITE_ROOT), 'docker/reporter.py')
         if not os.path.exists(tmp_docker_root):
             try:
                 os.makedirs(tmp_docker_root)
+                os.makedirs(tmp_docker_mount)
             except OSError as e:
                 solution_message = "Solution - docker dir creation failed\n{}".format(e)
                 logger.error(solution_message)
@@ -187,6 +192,7 @@ class Solution(LowerHashIdsMixin, models.Model):
         logger.info("Copying files")
         try:
             shutil.copy(dockerfile_path, os.path.join(tmp_docker_root, 'Dockerfile'))
+            shutil.copy(reporter_path, os.path.join(tmp_docker_root, 'reporter.py'))
             shutil.copy(os.path.join(settings.MEDIA_ROOT, self.challenge.tester.file.name), os.path.join(tmp_docker_root, 'tester.py'))
             shutil.copy(os.path.join(settings.MEDIA_ROOT, self.solution.file.name), os.path.join(tmp_docker_root, 'solution.py'))
 
@@ -217,9 +223,10 @@ class Solution(LowerHashIdsMixin, models.Model):
                 return Solution.STATUS_SUBMITTED, solution_message
 
             logger.info("Running container")
-            run_cmd = "docker run --rm{network} --log-driver=none --name={name} {image}".format(
+            run_cmd = "docker run --rm{network} --log-driver=none --name={name} -v {result_folder}:/mount {image}".format(
                 network=' --network=none' if not self.challenge.network_allowed else '',
                 name=container_hash,
+                result_folder=tmp_docker_mount,
                 image=image_hash,
             )
 
@@ -250,11 +257,24 @@ class Solution(LowerHashIdsMixin, models.Model):
                 logger.info("Solution - wrong")
                 logger.info(e.output)
                 solution_status = Solution.STATUS_WRONG
-                solution_message = "Wrong\n{}".format(force_text(e.output)[:1024])
+
+            try:
+                with open(os.path.join(tmp_docker_mount,'report.txt'),'r') as report:
+                    response = json.load(report)
+                    logger.info(response)
+            except FileNotFoundError:
+                solution_status = Solution.STATUS_WRONG
             else:
-                logger.info("Solution - correct")
-                logger.info(force_text(output))
-                solution_message = "Correct\n{}".format(force_text(output)[:1024])
+                if response['fail'] or response['error']:
+                    solution_status = Solution.STATUS_WRONG
+                else:
+                    solution_status = Solution.STATUS_CORRECT
+
+                solution_message = ""
+                for test in response['tests']:
+                    solution_message += "{test}: {seconds}sec {flavor}\n".format(**test)
+                    if test["error"]:
+                        solution_message += "{error}\n".format(**test)
 
             try:
                 subprocess.check_output("docker rmi {}".format(image_hash), stderr=subprocess.STDOUT, shell=True)
