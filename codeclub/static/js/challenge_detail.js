@@ -199,9 +199,9 @@ var Solution = React.createClass({
         var cutFileName = (fileName.length > 15) ? fileName.substr(0,15-1)+'...' : fileName;
         var target = "summary" + this.props.solution.id;
         var feedback = null;
-        if (this.props.solution.TODO.tests) {
+        if (this.props.solution.tests) {
             feedback = (<div id={ target } className="collapse">
-                <Feedback tests={this.props.solution.TODO.tests }/>
+                <Feedback tests={this.props.solution.tests }/>
             </div>);
         }
 

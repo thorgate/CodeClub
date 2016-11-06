@@ -272,6 +272,7 @@ class Solution(LowerHashIdsMixin, models.Model):
                     response['hash'] = hex_hash
                     response['tampered'] = hex_hash != data_hash
             except FileNotFoundError:
+                logger.info("Solution - file not found")
                 solution_status = Solution.STATUS_WRONG
             else:
                 if response['tampered']:
@@ -304,23 +305,22 @@ class Solution(LowerHashIdsMixin, models.Model):
             return solution_status, solution_message
 
     def user_safe_feedback(self):
-        feedback = {}
+        feedback = {'status_title': self.get_status_display()}
         if self.feedback:
-            feedback = self.feedback
+            feedback = {**feedback, **self.feedback}
             feedback.pop('key')
             for test in feedback['tests']:
                 test.pop('error')
+
+            if self.status == Solution.STATUS_WRONG:
+                feedback['status_title'] = "{} / {}".format(
+                    feedback['success'],
+                    feedback['success'] + feedback['fail'] + feedback['error'],
+                )
         return feedback
 
-    def serialize(self):  # TODO: move everything feedback to prop
+    def serialize(self):
         feedback = self.user_safe_feedback()
-        status_title = self.get_status_display()
-
-        if feedback and self.status == Solution.STATUS_WRONG:
-            status_title = "{} / {}".format(
-                feedback['success'],
-                feedback['success'] + feedback['fail'] + feedback['error'],
-            )
 
         return {
             'id': self.id,
@@ -329,6 +329,5 @@ class Solution(LowerHashIdsMixin, models.Model):
             'url': self.solution.url,
             'timestamp': dateformat.format(self.timestamp.astimezone(timezone.get_default_timezone()), 'd. F - H:i'),
             'bootstrap_class': self.bootstrap_class,
-            'status_title': status_title,
-            'TODO': feedback,
+            **feedback,
         }
