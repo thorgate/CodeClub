@@ -2,6 +2,7 @@ import os
 import json
 import unittest
 from time import time
+import hashlib
 
 SECRET = os.environ.pop("KEY")
 
@@ -74,8 +75,12 @@ class JSONTestResult(unittest.TextTestResult):
             'success': len(self.success),
             'error': len(self.errors),
         }
+
+        data_string = json.dumps(data)
+        data_hash = hashlib.pbkdf2_hmac('sha256', data_string.encode(), SECRET.encode(), 100000).hex()
+
         with open("/mount/report.txt", "w") as outfile:
-            json.dump(data, outfile)
+            outfile.write(data_hash + '\n' + data_string)
 
     def serialize(self, test, time, flavor, err):
         data = {
@@ -88,4 +93,4 @@ class JSONTestResult(unittest.TextTestResult):
 
 
 if __name__ == '__main__':
-     unittest.main(exit=False, testRunner=unittest.TextTestRunner(resultclass=JSONTestResult))
+    unittest.main(exit=False, testRunner=unittest.TextTestRunner(resultclass=JSONTestResult))

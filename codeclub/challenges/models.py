@@ -2,6 +2,7 @@ import logging
 import math
 import json
 import random
+from hashlib import pbkdf2_hmac
 
 from django.core.cache import cache
 from django.core.urlresolvers import reverse
@@ -179,7 +180,7 @@ class Solution(LowerHashIdsMixin, models.Model):
         from django.conf import settings
 
         tmp_docker_root = os.path.join(os.path.dirname(settings.SITE_ROOT), 'docker_tmp', self.hashid)
-        tmp_docker_mount =  os.path.join(tmp_docker_root, 'mount')
+        tmp_docker_mount = os.path.join(tmp_docker_root, 'mount')
 
         dockerfile_path = os.path.join(os.path.dirname(settings.SITE_ROOT), 'docker/Dockerfile')
         reporter_path = os.path.join(os.path.dirname(settings.SITE_ROOT), 'docker/reporter.py')
@@ -264,14 +265,16 @@ class Solution(LowerHashIdsMixin, models.Model):
                 solution_status = Solution.STATUS_WRONG
 
             try:
-                with open(os.path.join(tmp_docker_mount,'report.txt'),'r') as report:
-                    response = json.load(report)
-                    logger.info(response)
+                with open(os.path.join(tmp_docker_mount, 'report.txt'), 'r') as report:
+                    hex_hash, json_string = list(map(str.strip, report.readlines()))
+                    data_hash = pbkdf2_hmac('sha256', json_string.encode(), str(random_key).encode(), 100000).hex()
+                    response = json.loads(json_string)
+                    response['hash'] = hex_hash
+                    response['tampered'] = hex_hash != data_hash
             except FileNotFoundError:
                 solution_status = Solution.STATUS_WRONG
             else:
-                # as effective as a wet noodle
-                if str(random_key) != response['key']:
+                if response['tampered']:
                     solution_status = Solution.STATUS_WRONG
                     logger.info("Solution - naughty")
                 elif response['fail'] or response['error']:
