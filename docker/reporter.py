@@ -1,6 +1,9 @@
+import os
+import json
 import unittest
 from time import time
-import json
+
+SECRET = os.environ.pop("KEY")
 
 from tester import *
 
@@ -65,7 +68,7 @@ class JSONTestResult(unittest.TextTestResult):
             result.append(self.serialize(test, self.test_times.get(test), 'ERROR', str(err)))
 
         data = {
-            'key': 'TODO: key',
+            'key': SECRET,
             'tests': result,
             'fail': len(self.failures),
             'success': len(self.success),

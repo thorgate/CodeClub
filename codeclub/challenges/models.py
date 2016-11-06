@@ -1,6 +1,7 @@
 import logging
 import math
 import json
+import random
 
 from django.core.cache import cache
 from django.core.urlresolvers import reverse
@@ -9,6 +10,7 @@ from django.db import models
 from django.utils import timezone, dateformat
 from django.utils.encoding import force_text
 from django.utils.translation import ugettext_lazy as _
+from django.contrib.postgres.fields import JSONField
 
 from hashids import Hashids
 
@@ -139,6 +141,7 @@ class Solution(LowerHashIdsMixin, models.Model):
     status = models.PositiveSmallIntegerField(choices=STATUS_CHOICES, default=STATUS_SUBMITTED)
     timestamp = models.DateTimeField(default=timezone.now)
     output = models.TextField(blank=True)
+    feedback = JSONField(null=True, blank=True)
 
     estimated_points = SolutionEstimateField(null=True, blank=True)
 
@@ -223,10 +226,12 @@ class Solution(LowerHashIdsMixin, models.Model):
                 return Solution.STATUS_SUBMITTED, solution_message
 
             logger.info("Running container")
-            run_cmd = "docker run --rm{network} --log-driver=none --name={name} -v {result_folder}:/mount {image}".format(
+            random_key = random.getrandbits(128)
+            run_cmd = "docker run -e KEY={key} --rm{network} --log-driver=none --name={name} -v {result_folder}:/mount {image}".format(
                 network=' --network=none' if not self.challenge.network_allowed else '',
                 name=container_hash,
                 result_folder=tmp_docker_mount,
+                key=random_key,
                 image=image_hash,
             )
 
@@ -265,11 +270,17 @@ class Solution(LowerHashIdsMixin, models.Model):
             except FileNotFoundError:
                 solution_status = Solution.STATUS_WRONG
             else:
-                if response['fail'] or response['error']:
+                # as effective as a wet noodle
+                if str(random_key) != response['key']:
+                    solution_status = Solution.STATUS_WRONG
+                    logger.info("Solution - naughty")
+                elif response['fail'] or response['error']:
                     solution_status = Solution.STATUS_WRONG
                 else:
                     solution_status = Solution.STATUS_CORRECT
 
+                self.feedback = response
+                self.save()
                 solution_message = ""
                 for test in response['tests']:
                     solution_message += "{test}: {seconds}sec {flavor}\n".format(**test)
@@ -289,7 +300,25 @@ class Solution(LowerHashIdsMixin, models.Model):
 
             return solution_status, solution_message
 
-    def serialize(self):
+    def user_safe_feedback(self):
+        feedback = {}
+        if self.feedback:
+            feedback = self.feedback
+            feedback.pop('key')
+            for test in feedback['tests']:
+                test.pop('error')
+        return feedback
+
+    def serialize(self):  # TODO: move everything feedback to prop
+        feedback = self.user_safe_feedback()
+        status_title = self.get_status_display()
+
+        if feedback and self.status == Solution.STATUS_WRONG:
+            status_title = "{} / {}".format(
+                feedback['success'],
+                feedback['success'] + feedback['fail'] + feedback['error'],
+            )
+
         return {
             'id': self.id,
             'filename': self.filename,
@@ -297,5 +326,6 @@ class Solution(LowerHashIdsMixin, models.Model):
             'url': self.solution.url,
             'timestamp': dateformat.format(self.timestamp.astimezone(timezone.get_default_timezone()), 'd. F - H:i'),
             'bootstrap_class': self.bootstrap_class,
-            'status_title': self.get_status_display(),
+            'status_title': status_title,
+            'TODO': feedback,
         }

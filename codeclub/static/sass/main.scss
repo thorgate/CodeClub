@@ -32,6 +32,13 @@ body {
     overflow: auto;
 }
 
+.tests{
+    padding: 5px 26px;
+    &:not(:first-of-type)  {
+        border-top: 0 none;
+    }
+}
+
 .eventNav {
     background-color: #eee;
     margin-top: -21px;
