@@ -230,4 +230,5 @@ MARKDOWNX_MARKDOWN_EXTENSIONS = [
     'markdown.extensions.extra',
     'markdown.extensions.nl2br',
     'markdown.extensions.smarty',
+    'markdown.extensions.toc',
 ]
