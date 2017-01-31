@@ -12,6 +12,8 @@ urlpatterns = [
     url(r'', include('challenges.urls')),
     url(r'', include('tutorials.urls')),
 
+    url(r'^md/', include('markdownx.urls')),
+
     url(r'^tagauks/', include(admin.site.urls)),
 ]
 

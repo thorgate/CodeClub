@@ -12,6 +12,7 @@
                             <h3 class="panel-title">{{ tutorial.title }}</h3>
                         </div>
                         <div class="panel-body challenge-body-short">
+                            {{ tutorial.description_markdownified|safe }}
                         </div>
                         <div class="list-group">
                             <a href="{{ tutorial.get_absolute_url }}" class="list-group-item">Go to tutorial</a>

@@ -1,6 +1,8 @@
 from django.core.urlresolvers import reverse
 from django.db import models
 
+from markdownx.utils import markdownify
+
 
 class Tutorial(models.Model):
     title = models.CharField(max_length=32)
@@ -18,3 +20,6 @@ class Tutorial(models.Model):
 
     def get_absolute_url(self):
         return reverse('tutorials_detail', kwargs={'pk': self.pk})
+
+    def description_markdownified(self):
+        return markdownify(self.description)
