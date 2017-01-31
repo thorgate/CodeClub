@@ -188,7 +188,10 @@ class Solution(LowerHashIdsMixin, models.Model):
         try:
             shutil.copy(dockerfile_path, os.path.join(tmp_docker_root, 'Dockerfile'))
             shutil.copy(os.path.join(settings.MEDIA_ROOT, self.challenge.tester.file.name), os.path.join(tmp_docker_root, 'tester.py'))
-            shutil.copy(os.path.join(settings.MEDIA_ROOT, self.solution.file.name), os.path.join(tmp_docker_root, 'solution.py'))
+
+            _, file_extension = os.path.splitext(self.solution.file.name)
+            solution_file_name = 'solution{}'.format('.pyc' if file_extension =='.pyc' else '.py')
+            shutil.copy(os.path.join(settings.MEDIA_ROOT, self.solution.file.name), os.path.join(tmp_docker_root, solution_file_name))
 
             requirements_path = os.path.join(tmp_docker_root, 'requirements.txt')
             if self.challenge.requirements:
