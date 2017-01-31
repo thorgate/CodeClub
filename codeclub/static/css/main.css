@@ -10,9 +10,17 @@ body {
   border-bottom: 1px solid #888;
 }
 
-.challenge-body-short {
+.panel-body--short {
   height: 100px;
   overflow: hidden;
+}
+.panel-body--short .toc {
+  display: none;
+}
+.panel-body--short h1, .panel-body--short h2, .panel-body--short h3, .panel-body--short h4 {
+  font-size: inherit;
+  font-weight: bold;
+  margin-top: 0;
 }
 
 .panel-title .label.pull-right, .jumbotron .label + .label {

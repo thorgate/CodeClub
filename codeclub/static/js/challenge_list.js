@@ -99,7 +99,7 @@ var Challenge = React.createClass({
                             {this.props.challenge.title}
                         </h3>
                     </div>
-                    <div className="panel-body challenge-body-short">
+                    <div className="panel-body panel-body--short">
                         <div dangerouslySetInnerHTML={{ __html: this.props.challenge.description }}></div>
                     </div>
                     <div className="list-group">
