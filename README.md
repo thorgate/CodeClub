@@ -1,7 +1,8 @@
 # README for CodeClub
 
  - Python:  3.4
- - DB:      PostgreSQL (locally SQLite)
+ - DB:      PostgreSQL
+ - Docker:  v1.12.3+
 
 ## Setting up development
 

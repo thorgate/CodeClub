@@ -5,7 +5,6 @@
 gunicorn==19.3.0
 
 lxml==3.4.4
-psycopg2==2.6.1
 
 # Sentry
 raven==5.7.2
