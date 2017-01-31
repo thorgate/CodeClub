@@ -13,6 +13,10 @@ class TutorialAdmin(admin.ModelAdmin):
     formfield_overrides = {
         models.TextField: {'widget': AdminMarkdownxWidget},
     }
+    fieldsets = (
+        (None, {'fields': ('title', 'public', 'author', 'order')}),
+        ('Description', {'fields': ('description',)}),
+    )
 
 
 admin.site.register(Tutorial, TutorialAdmin)
