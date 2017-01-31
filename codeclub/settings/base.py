@@ -47,6 +47,7 @@ INSTALLED_APPS = [
     'accounts',
     'challenges',
     'codeclub',
+    'tutorials',
 ]
 
 
