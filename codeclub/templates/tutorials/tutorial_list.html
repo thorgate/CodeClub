@@ -1,0 +1,27 @@
+{% extends "base.html" %}
+
+{% block content %}
+    <h1>Tutorials</h1>
+
+    {% if tutorial_list %}
+        <div class="row">
+            {% for tutorial in tutorial_list %}
+                <div class="col-md-4 col-sm-6">
+                    <div class="panel panel-{% if tutorial.public %}default{% else %}warning{% endif %}">
+                        <div class="panel-heading">
+                            <h3 class="panel-title">{{ tutorial.title }}</h3>
+                        </div>
+                        <div class="panel-body challenge-body-short">
+                            {{ tutorial.description_markdownified|safe }}
+                        </div>
+                        <div class="list-group">
+                            <a href="{{ tutorial.get_absolute_url }}" class="list-group-item">Go to tutorial</a>
+                        </div>
+                    </div>
+                </div>
+            {% endfor %}
+        </div>
+    {% else %}
+        <div class="alert alert-info">Could not find any tutorials :(</div>
+    {% endif %}
+{% endblock content %}

@@ -72,7 +72,7 @@ var ChallengeDetail = React.createClass({
                         {golf_label}
                         {non_public_warning}
                     </p>
-                    <div dangerouslySetInnerHTML={{ __html: marked(this.state.challenge.description, {sanitize: true}) }}></div>
+                    <div dangerouslySetInnerHTML={{ __html: this.state.challenge.description }}></div>
                 </div>
 
                 <div className="row">

@@ -10,6 +10,7 @@ from django.utils.encoding import force_text
 from django.utils.translation import ugettext_lazy as _
 
 from hashids import Hashids
+from markdownx.utils import markdownify
 
 from codeclub.mixins import CachedModelMixin
 from tg_utils.files import random_path
@@ -77,6 +78,9 @@ class Challenge(CachedModelMixin, models.Model):
     def get_absolute_url(self):
         return reverse('challenge_detail', kwargs={'pk': self.id})
 
+    def description_markdownified(self):
+        return markdownify(self.description)
+
     @property
     def calculated_points(self):
         key_hash, created = self.get_cache_hash()
@@ -109,7 +113,7 @@ class Challenge(CachedModelMixin, models.Model):
             'title': self.title,
             'author': self.author.get_display_name(),
             'public': self.public,
-            'description': self.description,
+            'description': self.description_markdownified(),
             'calculated_points': self.calculated_points,
             'golf': self.golf,
         }
