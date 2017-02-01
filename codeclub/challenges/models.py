@@ -314,7 +314,7 @@ class Solution(LowerHashIdsMixin, models.Model):
     def user_safe_feedback(self):
         feedback = {'status_title': self.get_status_display()}
         if self.feedback:
-            feedback = {**feedback, **self.feedback}
+            feedback.update(self.feedback)
             feedback.pop('key')
             for test in feedback['tests']:
                 test.pop('error')
@@ -329,12 +329,13 @@ class Solution(LowerHashIdsMixin, models.Model):
     def serialize(self):
         feedback = self.user_safe_feedback()
 
-        return {
+        feedback.update({
             'id': self.id,
             'filename': self.filename,
             'filesize': self.solution_size,
             'url': self.solution.url,
             'timestamp': dateformat.format(self.timestamp.astimezone(timezone.get_default_timezone()), 'd. F - H:i'),
             'bootstrap_class': self.bootstrap_class,
-            **feedback,
-        }
+        })
+
+        return feedback
