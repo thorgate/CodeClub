@@ -99,8 +99,8 @@ var Challenge = React.createClass({
                             {this.props.challenge.title}
                         </h3>
                     </div>
-                    <div className="panel-body challenge-body-short">
-                        <div dangerouslySetInnerHTML={{ __html: marked(this.props.challenge.description, {sanitize: true}) }}></div>
+                    <div className="panel-body panel-body--short">
+                        <div dangerouslySetInnerHTML={{ __html: this.props.challenge.description }}></div>
                     </div>
                     <div className="list-group">
                         <a href={detail_url} className="list-group-item">Go to challenge</a>

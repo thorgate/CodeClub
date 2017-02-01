@@ -42,10 +42,12 @@ INSTALLED_APPS = [
 
     'crispy_forms',
     'compressor',
+    'markdownx',
 
     'accounts',
     'challenges',
     'codeclub',
+    'tutorials',
 ]
 
 
@@ -225,3 +227,12 @@ SILENCED_SYSTEM_CHECKS = [
 ]
 
 GOOGLE_ANALYTICS_PROPERTY_ID = None
+
+# Markdown
+MARKDOWNX_URLS_PATH = '/md/markdownify/'
+MARKDOWNX_MARKDOWN_EXTENSIONS = [
+    'markdown.extensions.extra',
+    'markdown.extensions.nl2br',
+    'markdown.extensions.smarty',
+    'markdown.extensions.toc',
+]

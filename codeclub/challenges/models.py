@@ -14,6 +14,7 @@ from django.utils.translation import ugettext_lazy as _
 from django.contrib.postgres.fields import JSONField
 
 from hashids import Hashids
+from markdownx.utils import markdownify
 
 from codeclub.mixins import CachedModelMixin
 from tg_utils.files import random_path
@@ -81,6 +82,9 @@ class Challenge(CachedModelMixin, models.Model):
     def get_absolute_url(self):
         return reverse('challenge_detail', kwargs={'pk': self.id})
 
+    def description_markdownified(self):
+        return markdownify(self.description)
+
     @property
     def calculated_points(self):
         key_hash, created = self.get_cache_hash()
@@ -113,7 +117,7 @@ class Challenge(CachedModelMixin, models.Model):
             'title': self.title,
             'author': self.author.get_display_name(),
             'public': self.public,
-            'description': self.description,
+            'description': self.description_markdownified(),
             'calculated_points': self.calculated_points,
             'golf': self.golf,
         }
@@ -198,7 +202,10 @@ class Solution(LowerHashIdsMixin, models.Model):
             shutil.copy(dockerfile_path, os.path.join(tmp_docker_root, 'Dockerfile'))
             shutil.copy(reporter_path, os.path.join(tmp_docker_root, 'reporter.py'))
             shutil.copy(os.path.join(settings.MEDIA_ROOT, self.challenge.tester.file.name), os.path.join(tmp_docker_root, 'tester.py'))
-            shutil.copy(os.path.join(settings.MEDIA_ROOT, self.solution.file.name), os.path.join(tmp_docker_root, 'solution.py'))
+
+            _, file_extension = os.path.splitext(self.solution.file.name)
+            solution_file_name = 'solution{}'.format('.pyc' if file_extension =='.pyc' else '.py')
+            shutil.copy(os.path.join(settings.MEDIA_ROOT, self.solution.file.name), os.path.join(tmp_docker_root, solution_file_name))
 
             requirements_path = os.path.join(tmp_docker_root, 'requirements.txt')
             if self.challenge.requirements:

@@ -1,0 +1,10 @@
+{% extends "base.html" %}
+
+{% block content %}
+    <h1>
+        {{ tutorial.title }}
+        {% if tutorial.author %} <small>by {{ tutorial.author.get_display_name }}</small>{% endif %}
+    </h1>
+
+    {{ tutorial.description_markdownified|safe }}
+{% endblock content %}
