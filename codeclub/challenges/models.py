@@ -1,5 +1,9 @@
+import codecs
 import logging
 import math
+import json
+import random
+from hashlib import pbkdf2_hmac
 
 from django.core.cache import cache
 from django.core.urlresolvers import reverse
@@ -8,6 +12,7 @@ from django.db import models
 from django.utils import timezone, dateformat
 from django.utils.encoding import force_text
 from django.utils.translation import ugettext_lazy as _
+from django.contrib.postgres.fields import JSONField
 
 from hashids import Hashids
 from markdownx.utils import markdownify
@@ -142,6 +147,7 @@ class Solution(LowerHashIdsMixin, models.Model):
     status = models.PositiveSmallIntegerField(choices=STATUS_CHOICES, default=STATUS_SUBMITTED)
     timestamp = models.DateTimeField(default=timezone.now)
     output = models.TextField(blank=True)
+    feedback = JSONField(null=True, blank=True)
 
     estimated_points = SolutionEstimateField(null=True, blank=True)
 
@@ -179,10 +185,14 @@ class Solution(LowerHashIdsMixin, models.Model):
         from django.conf import settings
 
         tmp_docker_root = os.path.join(os.path.dirname(settings.SITE_ROOT), 'docker_tmp', self.hashid)
+        tmp_docker_mount = os.path.join(tmp_docker_root, 'mount')
+
         dockerfile_path = os.path.join(os.path.dirname(settings.SITE_ROOT), 'docker/Dockerfile')
+        reporter_path = os.path.join(os.path.dirname(settings.SITE_ROOT), 'docker/reporter.py')
         if not os.path.exists(tmp_docker_root):
             try:
                 os.makedirs(tmp_docker_root)
+                os.makedirs(tmp_docker_mount)
             except OSError as e:
                 solution_message = "Solution - docker dir creation failed\n{}".format(e)
                 logger.error(solution_message)
@@ -191,6 +201,7 @@ class Solution(LowerHashIdsMixin, models.Model):
         logger.info("Copying files")
         try:
             shutil.copy(dockerfile_path, os.path.join(tmp_docker_root, 'Dockerfile'))
+            shutil.copy(reporter_path, os.path.join(tmp_docker_root, 'reporter.py'))
             shutil.copy(os.path.join(settings.MEDIA_ROOT, self.challenge.tester.file.name), os.path.join(tmp_docker_root, 'tester.py'))
 
             _, file_extension = os.path.splitext(self.solution.file.name)
@@ -224,9 +235,12 @@ class Solution(LowerHashIdsMixin, models.Model):
                 return Solution.STATUS_SUBMITTED, solution_message
 
             logger.info("Running container")
-            run_cmd = "docker run --rm{network} --log-driver=none --name={name} {image}".format(
+            random_key = random.getrandbits(128)
+            run_cmd = "docker run -e KEY={key} --rm{network} --log-driver=none --name={name} -v {result_folder}:/mount {image}".format(
                 network=' --network=none' if not self.challenge.network_allowed else '',
                 name=container_hash,
+                result_folder=tmp_docker_mount,
+                key=random_key,
                 image=image_hash,
             )
 
@@ -257,11 +271,34 @@ class Solution(LowerHashIdsMixin, models.Model):
                 logger.info("Solution - wrong")
                 logger.info(e.output)
                 solution_status = Solution.STATUS_WRONG
-                solution_message = "Wrong\n{}".format(force_text(e.output)[:1024])
-            else:
-                logger.info("Solution - correct")
-                logger.info(force_text(output))
-                solution_message = "Correct\n{}".format(force_text(output)[:1024])
+
+            if solution_status == Solution.STATUS_CORRECT:
+                try:
+                    with open(os.path.join(tmp_docker_mount, 'report.txt'), 'r') as report:
+                        hex_hash, json_string = list(map(str.strip, report.readlines()))
+                        data_hash = codecs.encode(pbkdf2_hmac('sha256', json_string.encode(), str(random_key).encode(), 100000), 'hex_codec').decode('utf-8')
+                        response = json.loads(json_string)
+                        response['hash'] = hex_hash
+                        response['tampered'] = hex_hash != data_hash
+                except FileNotFoundError:
+                    logger.info("Solution - file not found")
+                    solution_status = Solution.STATUS_WRONG
+                else:
+                    if response['tampered']:
+                        solution_status = Solution.STATUS_WRONG
+                        logger.info("Solution - naughty")
+                    elif response['fail'] or response['error']:
+                        solution_status = Solution.STATUS_WRONG
+                    else:
+                        solution_status = Solution.STATUS_CORRECT
+
+                    self.feedback = response
+                    self.save()
+                    solution_message = ""
+                    for test in response['tests']:
+                        solution_message += "{test}: {seconds}sec {flavor}\n".format(**test)
+                        if test["error"]:
+                            solution_message += "{error}\n".format(**test)
 
             try:
                 subprocess.check_output("docker rmi {}".format(image_hash), stderr=subprocess.STDOUT, shell=True)
@@ -276,13 +313,31 @@ class Solution(LowerHashIdsMixin, models.Model):
 
             return solution_status, solution_message
 
+    def user_safe_feedback(self):
+        feedback = {'status_title': self.get_status_display()}
+        if self.feedback:
+            feedback.update(self.feedback)
+            feedback.pop('key')
+            for test in feedback['tests']:
+                test.pop('error')
+
+            if self.status == Solution.STATUS_WRONG:
+                feedback['status_title'] = "{} / {}".format(
+                    feedback['success'],
+                    feedback['success'] + feedback['fail'] + feedback['error'],
+                )
+        return feedback
+
     def serialize(self):
-        return {
+        feedback = self.user_safe_feedback()
+
+        feedback.update({
             'id': self.id,
             'filename': self.filename,
             'filesize': self.solution_size,
             'url': self.solution.url,
             'timestamp': dateformat.format(self.timestamp.astimezone(timezone.get_default_timezone()), 'd. F - H:i'),
             'bootstrap_class': self.bootstrap_class,
-            'status_title': self.get_status_display(),
-        }
+        })
+
+        return feedback

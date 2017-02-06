@@ -162,22 +162,71 @@ var SolutionList = React.createClass({
     }
 });
 
+var Feedback = React.createClass({
+    render: function() {
+        return (
+            <span>
+                { this.props.tests.map(
+                    function (test, index) {
+                        var label = 'success';
+                        if (test.flavor === 'FAIL') {
+                            label = 'danger';
+                        } else if (test.flavor === 'ERROR') {
+                            label = 'warning';
+                        }
+                        var time = Math.round(test.seconds * 100) / 100;
+                        return (
+                            <span key={index} className="list-group-item tests">
+                                <span className={"label solution-info-label label-"+label}>{test.flavor}</span>
+                                {test.test}
+                                <span className={"label label-default pull-right"}>{time} sec</span>
+                            </span>
+                        );
+                    }
+                )}
+            </span>
+        );
+    }
+});
+
 var Solution = React.createClass({
     render: function() {
         var labelClass = "label solution-info-label";
         labelClass += " label-" + (this.props.solution.bootstrap_class || "default");
 
-        var sizeBlock = "(" + this.props.solution.filesize + " bytes)";
+        var sizeBlock = this.props.golf ? this.props.solution.filesize + " bytes" : null;
+        var fileName = this.props.solution.filename;
+        var cutFileName = (fileName.length > 15) ? fileName.substr(0,15-1)+'...' : fileName;
+        var target = "summary" + this.props.solution.id;
+        var feedback = null;
+        if (this.props.solution.tests) {
+            feedback = (<div id={ target } className="collapse">
+                <Feedback tests={this.props.solution.tests }/>
+            </div>);
+        }
 
         return (
-            <a href={ this.props.solution.url } className="list-group-item">
-                <span className="pull-right">
-                    { this.props.solution.timestamp }
-                </span>
+            <span>
+                <div
+                    className="list-group-item"
+                    data-toggle="collapse"
+                    data-target={ '#' + target }
+                >
+                    <span className="pull-right">{ this.props.solution.timestamp }</span>
 
-                <span className={labelClass} title={ this.props.solution.id }>{ this.props.solution.status_title}</span>
-                { this.props.solution.filename } { this.props.golf ? sizeBlock : null}
-            </a>
+                    <span className={labelClass} title={ this.props.solution.id }>{ this.props.solution.status_title}</span>
+
+                    <span className="label solution-info-label label-default">
+                        { sizeBlock }
+                    </span>
+                    <a className="label solution-info-label label-default" href={ this.props.solution.url }>
+                        { cutFileName }
+                    </a>
+
+                </div>
+                { feedback }
+
+            </span>
         );
     }
 });

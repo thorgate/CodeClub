@@ -1,7 +1,7 @@
 # README for CodeClub
 
  - Python:  3.4
- - DB:      PostgreSQL
+ - DB:      PostgreSQL 9.5+
  - Docker:  v1.12.3+
 
 ## Setting up development

@@ -1,7 +1,7 @@
 @charset "UTF-8";
 /*!
- * Bootstrap v3.3.7 (http://getbootstrap.com)
- * Copyright 2011-2016 Twitter, Inc.
+ * Bootstrap v3.3.6 (http://getbootstrap.com)
+ * Copyright 2011-2015 Twitter, Inc.
  * Licensed under MIT (https://github.com/twbs/bootstrap/blob/master/LICENSE)
  */
 /*! normalize.css v3.0.3 | MIT License | github.com/necolas/normalize.css */
@@ -310,8 +310,8 @@ th {
 }
 @font-face {
   font-family: 'Glyphicons Halflings';
-  src: url(../fonts/glyphicons-halflings-regular.eot?1448278395);
-  src: url(../fonts/glyphicons-halflings-regular.eot?&1448278395#iefix) format("embedded-opentype"), url(../fonts/glyphicons-halflings-regular.woff2) format("woff2"), url(../fonts/glyphicons-halflings-regular.woff?1448278395) format("woff"), url(../fonts/glyphicons-halflings-regular.ttf?1448278395) format("truetype"), url(../fonts/glyphicons-halflings-regular.svg?1448278395#glyphicons_halflingsregular) format("svg");
+  src: url(../fonts/glyphicons-halflings-regular.eot?1474809087);
+  src: url(../fonts/glyphicons-halflings-regular.eot?&1474809087#iefix) format("embedded-opentype"), url(../fonts/glyphicons-halflings-regular.woff2) format("woff2"), url(../fonts/glyphicons-halflings-regular.woff?1474809087) format("woff"), url(../fonts/glyphicons-halflings-regular.ttf?1474809087) format("truetype"), url(../fonts/glyphicons-halflings-regular.svg?1474809087#glyphicons_halflingsregular) format("svg");
 }
 .glyphicon {
   position: relative;
@@ -1418,6 +1418,7 @@ a:hover, a:focus {
   text-decoration: underline;
 }
 a:focus {
+  outline: thin dotted;
   outline: 5px auto -webkit-focus-ring-color;
   outline-offset: -2px;
 }
@@ -3118,6 +3119,7 @@ select[size] {
 input[type="file"]:focus,
 input[type="radio"]:focus,
 input[type="checkbox"]:focus {
+  outline: thin dotted;
   outline: 5px auto -webkit-focus-ring-color;
   outline-offset: -2px;
 }
@@ -3670,6 +3672,7 @@ select[multiple].input-lg,
   user-select: none;
 }
 .btn:focus, .btn.focus, .btn:active:focus, .btn:active.focus, .btn.active:focus, .btn.active.focus {
+  outline: thin dotted;
   outline: 5px auto -webkit-focus-ring-color;
   outline-offset: -2px;
 }
