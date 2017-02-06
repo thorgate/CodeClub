@@ -1,3 +1,4 @@
+import codecs
 import logging
 import math
 import json
@@ -271,32 +272,33 @@ class Solution(LowerHashIdsMixin, models.Model):
                 logger.info(e.output)
                 solution_status = Solution.STATUS_WRONG
 
-            try:
-                with open(os.path.join(tmp_docker_mount, 'report.txt'), 'r') as report:
-                    hex_hash, json_string = list(map(str.strip, report.readlines()))
-                    data_hash = pbkdf2_hmac('sha256', json_string.encode(), str(random_key).encode(), 100000).hex()
-                    response = json.loads(json_string)
-                    response['hash'] = hex_hash
-                    response['tampered'] = hex_hash != data_hash
-            except FileNotFoundError:
-                logger.info("Solution - file not found")
-                solution_status = Solution.STATUS_WRONG
-            else:
-                if response['tampered']:
-                    solution_status = Solution.STATUS_WRONG
-                    logger.info("Solution - naughty")
-                elif response['fail'] or response['error']:
+            if solution_status == Solution.STATUS_CORRECT:
+                try:
+                    with open(os.path.join(tmp_docker_mount, 'report.txt'), 'r') as report:
+                        hex_hash, json_string = list(map(str.strip, report.readlines()))
+                        data_hash = codecs.encode(pbkdf2_hmac('sha256', json_string.encode(), str(random_key).encode(), 100000), 'hex_codec').decode('utf-8')
+                        response = json.loads(json_string)
+                        response['hash'] = hex_hash
+                        response['tampered'] = hex_hash != data_hash
+                except FileNotFoundError:
+                    logger.info("Solution - file not found")
                     solution_status = Solution.STATUS_WRONG
                 else:
-                    solution_status = Solution.STATUS_CORRECT
+                    if response['tampered']:
+                        solution_status = Solution.STATUS_WRONG
+                        logger.info("Solution - naughty")
+                    elif response['fail'] or response['error']:
+                        solution_status = Solution.STATUS_WRONG
+                    else:
+                        solution_status = Solution.STATUS_CORRECT
 
-                self.feedback = response
-                self.save()
-                solution_message = ""
-                for test in response['tests']:
-                    solution_message += "{test}: {seconds}sec {flavor}\n".format(**test)
-                    if test["error"]:
-                        solution_message += "{error}\n".format(**test)
+                    self.feedback = response
+                    self.save()
+                    solution_message = ""
+                    for test in response['tests']:
+                        solution_message += "{test}: {seconds}sec {flavor}\n".format(**test)
+                        if test["error"]:
+                            solution_message += "{error}\n".format(**test)
 
             try:
                 subprocess.check_output("docker rmi {}".format(image_hash), stderr=subprocess.STDOUT, shell=True)
