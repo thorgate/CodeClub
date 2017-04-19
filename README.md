@@ -38,29 +38,23 @@ Create `settings/local.py` from `settings/local.py.example`
 
  `python manage.py migrate`
 
-## RabbitMQ setup (on Ubuntu)
+## Redis setup (on Ubuntu)
 
-https://www.digitalocean.com/community/tutorials/how-to-install-and-manage-rabbitmq
+(if you want to, use e.g. https://launchpad.net/~chris-lea/+archive/ubuntu/redis-server to get latest version)
 
-`echo "deb http://www.rabbitmq.com/debian/ testing main" >> /etc/apt/sources.list`
+`sudo apt-get install redis-server`
 
-`curl http://www.rabbitmq.com/rabbitmq-signing-key-public.asc | sudo apt-key add -`
+## Celery and Redis setup (on Mac)
 
-`apt-get update`
-
-`sudo apt-get install rabbitmq-server`
-
-## Celery and RabbitMQ setup (on Mac)
-
-**RabbitMQ**
+**Redis**
 
 `brew update`
 
-`brew install rabbitmq`
+`brew install redis`
 
 If not already in PATH then `PATH=$PATH:/usr/local/sbin`
 
-`rabbitmq-server` starts the server
+`redis-server` starts the server
 
 **Celery**
 
