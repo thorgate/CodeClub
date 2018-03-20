@@ -9,7 +9,7 @@ os.environ.setdefault('DJANGO_SETTINGS_MODULE', 'settings')
 
 from django.conf import settings  # noqa
 
-app = Celery('codeclub', backend='amqp://guest@localhost//', broker='amqp://guest@localhost//')
+app = Celery('codeclub')
 
 # Using a string here means the worker will not have to
 # pickle the object when using Windows.

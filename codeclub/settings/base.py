@@ -97,13 +97,26 @@ DATABASES = {
 
 
 # Caching
+REDIS_HOST = 'localhost'
+REDIS_PORT = 6379
+REDIS_DB = 1
+REDIS_URL = 'redis://%s:%d/%d' % (REDIS_HOST, REDIS_PORT, REDIS_DB)
+
 CACHES = {
     'default': {
-        'BACKEND': 'django.core.cache.backends.memcached.MemcachedCache',
-        'LOCATION': '127.0.0.1:11211',
-        'KEY_PREFIX': 'codeclub',
+        "BACKEND": "django_redis.cache.RedisCache",
+        "LOCATION": REDIS_URL,
+        "OPTIONS": {
+            "CLIENT_CLASS": "django_redis.client.DefaultClient",
+        }
     }
 }
+
+
+# Celery configuration
+BROKER_URL = REDIS_URL
+CELERY_RESULT_BACKEND = REDIS_URL
+BROKER_TRANSPORT_OPTIONS = {'fanout_prefix': True}
 
 
 # Internationalization
