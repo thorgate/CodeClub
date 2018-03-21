@@ -13,10 +13,6 @@ from challenges.forms import SolutionForm
 from challenges.models import Challenge, Solution, Event
 
 
-class AboutView(TemplateView):
-    template_name = "challenges/about.html"
-
-
 class DashboardView(TemplateView):
     template_name = "challenges/dashboard.html"
 
